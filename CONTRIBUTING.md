@@ -5,7 +5,7 @@ Thanks for your interest in contributing! 🦀
 ## Getting Started
 
 ```bash
-git clone https://github.com/atharv404/ClawRoute
+git clone https://github.com/Ath404/ClawRoute
 cd ClawRoute
 npm install
 cp .env.example .env   # Add your API keys
@@ -54,8 +54,8 @@ Tests live in `test/`. Please add tests for any new functionality.
 
 ## Reporting Issues
 
-Use the GitHub issue templates for [bug reports](https://github.com/atharv404/ClawRoute/issues/new?template=bug_report.md) and [feature requests](https://github.com/atharv404/ClawRoute/issues/new?template=feature_request.md).
+Use the GitHub issue templates for [bug reports](https://github.com/Ath404/ClawRoute/issues/new?template=bug_report.md) and [feature requests](https://github.com/Ath404/ClawRoute/issues/new?template=feature_request.md).
 
 ## Questions?
 
-Open a [GitHub Discussion](https://github.com/atharv404/ClawRoute/discussions) or drop a comment on the relevant issue.
+Open a [GitHub Discussion](https://github.com/Ath404/ClawRoute/discussions) or drop a comment on the relevant issue.

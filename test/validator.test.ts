@@ -145,14 +145,25 @@ describe('Validator', () => {
     });
 
     describe('Response Length Validation', () => {
-        it('should fail for suspiciously short response (non-heartbeat)', () => {
+        it('should fail for suspiciously short response on complex/frontier tiers', () => {
             const response = createMockHttpResponse(200);
             const responseBody = createResponse('Hi'); // Very short
 
-            const result = validateResponse(response, responseBody, createRequest(), TaskTier.MODERATE);
+            for (const tier of [TaskTier.COMPLEX, TaskTier.FRONTIER]) {
+                const result = validateResponse(response, responseBody, createRequest(), tier);
+                expect(result.valid).toBe(false);
+                expect(result.reason).toBe('suspiciously_short_response');
+            }
+        });
 
-            expect(result.valid).toBe(false);
-            expect(result.reason).toBe('suspiciously_short_response');
+        it('should accept a short correct answer on simple/moderate tiers instead of escalating', () => {
+            const response = createMockHttpResponse(200);
+            const responseBody = createResponse('Paris.');
+
+            for (const tier of [TaskTier.SIMPLE, TaskTier.MODERATE]) {
+                const result = validateResponse(response, responseBody, createRequest(), tier);
+                expect(result.valid).toBe(true);
+            }
         });
 
         it('should pass for short response in heartbeat tier', () => {

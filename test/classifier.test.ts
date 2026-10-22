@@ -209,8 +209,8 @@ describe('Classifier', () => {
         });
 
         it('should classify very long context as frontier', () => {
-            // Create a very long message
-            const longMessage = 'Please analyze this: ' + 'x'.repeat(10000);
+            // Past the 8000-token massive-context threshold (~4 chars per token)
+            const longMessage = 'Please analyze this: ' + 'x'.repeat(40000);
             const result = classifyRequest(createRequest(longMessage), config);
             expect(result.tier).toBe(TaskTier.FRONTIER);
         });

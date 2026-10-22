@@ -2,6 +2,8 @@
 
 **Intelligent cost-optimizing model router for OpenClaw**
 
+[Website](https://clawroute.atharvc.tech) · [npm](https://www.npmjs.com/package/clawroute)
+
 Save 60-90% on your LLM costs by automatically routing requests to cheaper models when appropriate.
 
 > **v1.2** — Intelligent, local, and private. Updated for the latest models (Feb 2026).
@@ -27,9 +29,19 @@ OpenClaw → ClawRoute (127.0.0.1:18790) → OpenAI/Anthropic/Google/DeepSeek
 
 ## Quick Start
 
+### From npm
+
+```bash
+npm install -g clawroute
+export OPENAI_API_KEY=sk-xxx        # or put your keys in a .env where you run it
+clawroute start                     # proxy on http://127.0.0.1:18790
+```
+
+### From source
+
 ```bash
 # Clone and install
-git clone https://github.com/atharv404/ClawRoute && cd ClawRoute
+git clone https://github.com/Ath404/ClawRoute && cd ClawRoute
 npm install && npm run build
 
 # Configure API keys
@@ -278,4 +290,4 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 ---
 
-Built with ❤️ by [atharv404](https://github.com/atharv404)
+Built with ❤️ by [Atharv Chauhan](https://atharvc.tech) · [GitHub](https://github.com/Ath404)

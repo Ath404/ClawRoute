@@ -226,6 +226,13 @@ function isComplex(
         return { match: true, confidence: 0.7, signals };
     }
 
+    // Frontier keywords in a shorter message ("implement a BST with AVL balancing"):
+    // not enough on their own for frontier, too much for the cheapest models.
+    if (FRONTIER_KEYWORDS.test(lastMessage)) {
+        signals.push('frontier_keywords');
+        return { match: true, confidence: 0.7, signals };
+    }
+
     return { match: false, confidence: 0, signals };
 }
 

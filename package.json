@@ -1,6 +1,6 @@
 {
     "name": "clawroute",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "description": "Intelligent cost-optimizing model router for OpenClaw",
     "main": "dist/index.js",
     "type": "module",
@@ -28,12 +28,13 @@
         "anthropic",
         "cost-optimization"
     ],
-    "author": "atharv404",
+    "author": "Atharv Chauhan (https://atharvc.tech)",
     "repository": {
         "type": "git",
-        "url": "https://github.com/atharv404/ClawRoute.git"
+        "url": "https://github.com/Ath404/ClawRoute.git"
     },
-    "homepage": "https://github.com/atharv404/ClawRoute",
+    "homepage": "https://clawroute.atharvc.tech",
+    "bugs": "https://github.com/Ath404/ClawRoute/issues",
     "license": "MIT",
     "dependencies": {
         "@hono/node-server": "^1.13.7",

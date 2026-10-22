@@ -7,6 +7,9 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from 'vitest';
 import { Hono } from 'hono';
 import { TaskTier, ClawRouteConfig } from '../src/types.js';
+import { readFileSync } from 'node:fs';
+
+const PKG_VERSION = (JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')) as { version: string }).version;
 
 // Mock fetch for provider calls
 const mockFetch = vi.fn();
@@ -86,7 +89,7 @@ describe('Integration Tests', () => {
 
             expect(res.status).toBe(200);
             expect(body.status).toBe('ok');
-            expect(body.version).toBe('1.1.0');
+            expect(body.version).toBe(PKG_VERSION);
         });
     });
 

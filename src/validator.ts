@@ -116,10 +116,12 @@ export function validateResponse(
         }
     }
 
-    // 7. Check for suspiciously short response (non-heartbeat only)
+    // 7. Check for suspiciously short response (complex/frontier only).
+    // A one-word answer to "capital of France?" is correct, and escalating it
+    // would spend frontier money on a question the cheap model already answered.
     const content = typeof message.content === 'string' ? message.content : '';
 
-    if (tier !== TaskTier.HEARTBEAT && !hadToolCalls) {
+    if ((tier === TaskTier.COMPLEX || tier === TaskTier.FRONTIER) && !hadToolCalls) {
         if (content.length < 15 && content.trim() !== '') {
             // Very short response for a non-trivial task
             return {
