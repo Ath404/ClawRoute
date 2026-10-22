@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ClawRoute — route every LLM call to the cheapest model that can handle it</title>
+<meta name="description" content="ClawRoute is an open-source local proxy that classifies each LLM request in under 5ms and routes it to the cheapest model that can handle it, escalating on failure. Works with any OpenAI-compatible client.">
+<link rel="canonical" href="https://clawroute.atharvc.tech/">
+<meta property="og:title" content="ClawRoute — open-source LLM cost router">
+<meta property="og:description" content="A local proxy that routes each LLM request to the cheapest model that can handle it. 60–90% lower API costs, any OpenAI-compatible client.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://clawroute.atharvc.tech/">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231B34C4'/%3E%3Cpath d='M8 22 L16 10 L24 22' stroke='%23EEF0EA' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400..700&family=Newsreader:opsz,wght@6..72,300..600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#EEF0EA; --card:#F6F7F3; --ink:#15171B; --ink-2:#3A3E44; --muted:#6C7068;
+  --rule:#D5D9CE; --accent:#1B34C4; --accent-soft:#DFE3F8; --accent-line:#C3CAF0;
+  --ok:#1E7A4C;
+  --display:'Familjen Grotesk',system-ui,sans-serif;
+  --body:'Newsreader',Georgia,serif;
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+  --col:880px; --ease:cubic-bezier(.2,.7,.3,1);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:18px;line-height:1.6;font-weight:380;-webkit-font-smoothing:antialiased;
+  background-image:linear-gradient(var(--rule) 1px,transparent 1px),linear-gradient(90deg,var(--rule) 1px,transparent 1px);
+  background-size:32px 32px;background-attachment:fixed;background-position:-1px -1px}
+body::before{content:"";position:fixed;inset:0;background:radial-gradient(ellipse at 50% 0%,color-mix(in srgb,var(--paper) 55%,transparent),var(--paper) 70%);pointer-events:none;z-index:-1}
+a{color:inherit}
+::selection{background:var(--accent);color:var(--paper)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px}
+.wrap{max-width:var(--col);margin:0 auto;padding:0 24px}
+code,pre,.mono{font-family:var(--mono)}
+
+nav{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--paper) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--rule)}
+nav .wrap{display:flex;gap:20px;align-items:center;height:54px;overflow-x:auto;scrollbar-width:none}
+nav .wrap::-webkit-scrollbar{display:none}
+nav a{font-family:var(--mono);font-size:12.5px;text-decoration:none;color:var(--muted);white-space:nowrap}
+nav a:hover{color:var(--accent)}
+nav .brand{margin-right:auto;color:var(--ink);font-weight:500;display:flex;align-items:center;gap:8px}
+nav .brand i{display:inline-block;width:18px;height:18px;border-radius:4px;background:var(--accent);position:relative}
+nav .brand i::after{content:"";position:absolute;left:4px;top:5px;width:8px;height:8px;border-left:2px solid var(--paper);border-top:2px solid var(--paper);transform:rotate(45deg) translate(1px,1px)}
+
+header{padding:76px 0 40px}
+.eyebrow{font-family:var(--mono);font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin:0 0 18px}
+h1{font-family:var(--display);font-weight:640;font-size:clamp(36px,6.4vw,62px);line-height:1.02;letter-spacing:-.025em;margin:0 0 20px;max-width:15ch}
+h1 em{font-style:normal;color:var(--accent)}
+.lead{font-size:clamp(19px,2.3vw,22px);color:var(--ink-2);max-width:40ch;margin:0 0 30px}
+.cta{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:28px}
+.btn{font-family:var(--mono);font-size:13.5px;text-decoration:none;padding:11px 16px;border-radius:6px;border:1px solid var(--ink);transition:transform .2s var(--ease),background .2s}
+.btn.primary{background:var(--ink);color:var(--paper)}
+.btn:hover{transform:translateY(-1px)}
+.btn:not(.primary):hover{background:var(--card)}
+
+.term{background:#15171B;color:#E6E8E1;border-radius:10px;padding:18px 20px 16px;font-family:var(--mono);font-size:14px;line-height:1.7;box-shadow:0 18px 40px -24px rgba(21,23,27,.55);max-width:620px;position:relative}
+.term .dots{display:flex;gap:6px;margin-bottom:12px}
+.term .dots span{width:10px;height:10px;border-radius:50%;background:#3A3E44}
+.term .p{color:#8E96F0}
+.term .c{color:#7C8079}
+.term .okline{color:#7FD3A8}
+.copy{position:absolute;top:12px;right:12px;font-family:var(--mono);font-size:11.5px;background:transparent;color:#AEB3AA;border:1px solid #3A3E44;border-radius:5px;padding:4px 9px;cursor:pointer}
+.copy:hover{color:#fff;border-color:#6C7068}
+
+.facts{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin:46px 0 10px;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+.facts div{padding:18px 14px 16px 0}
+.facts b{display:block;font-family:var(--display);font-size:26px;font-weight:620;letter-spacing:-.01em}
+.facts span{font-family:var(--mono);font-size:12px;color:var(--muted)}
+
+section{padding:58px 0 8px}
+h2{font-family:var(--display);font-weight:620;font-size:clamp(26px,3.6vw,34px);letter-spacing:-.015em;margin:0 0 8px}
+.sec-head{font-family:var(--mono);font-size:12.5px;color:var(--accent);margin:0 0 10px}
+.sub{color:var(--ink-2);margin:0 0 26px;max-width:58ch}
+
+.flow{display:grid;grid-template-columns:1fr auto 1.35fr auto 1fr;align-items:stretch;gap:10px}
+.node{background:var(--card);border:1px solid var(--rule);border-radius:10px;padding:16px}
+.node h3{font-family:var(--display);font-size:17px;margin:0 0 6px;font-weight:600}
+.node p{margin:0;font-size:15.5px;color:var(--ink-2);line-height:1.45}
+.node.mid{border-color:var(--accent-line);background:var(--accent-soft)}
+.node.mid ol{margin:6px 0 0;padding-left:20px;font-size:15.5px;color:var(--ink-2);line-height:1.5}
+.arrow{align-self:center;font-family:var(--mono);color:var(--accent);font-size:20px}
+
+.tiers{width:100%;border-collapse:collapse;font-size:16px}
+.tiers th{font-family:var(--mono);font-size:12px;font-weight:500;text-align:left;color:var(--muted);padding:0 12px 10px 0;border-bottom:1px solid var(--ink)}
+.tiers td{padding:13px 12px 13px 0;border-bottom:1px solid var(--rule);vertical-align:top}
+.tiers td:first-child{font-family:var(--mono);font-size:13.5px;white-space:nowrap}
+.tiers td:last-child{font-family:var(--mono);font-size:13px;color:var(--ink-2)}
+.tag{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:8px;background:var(--accent);vertical-align:1px}
+.t1 .tag{opacity:.25}.t2 .tag{opacity:.42}.t3 .tag{opacity:.6}.t4 .tag{opacity:.8}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.card{background:var(--card);border:1px solid var(--rule);border-radius:10px;padding:18px 18px 16px}
+.card h3{font-family:var(--display);font-size:17.5px;font-weight:600;margin:0 0 6px;display:flex;gap:8px;align-items:baseline}
+.card h3::before{content:"✓";font-family:var(--mono);color:var(--ok);font-size:14px}
+.card p{margin:0;font-size:16px;color:var(--ink-2);line-height:1.5}
+
+pre{background:#15171B;color:#E6E8E1;border-radius:10px;padding:16px 18px;font-size:13.5px;line-height:1.65;overflow-x:auto;margin:0}
+pre .c{color:#7C8079}
+.cli{display:grid;grid-template-columns:minmax(150px,auto) 1fr;gap:0;border-top:1px solid var(--rule)}
+.cli code{font-size:13.5px;padding:11px 14px 11px 0;border-bottom:1px solid var(--rule);color:var(--accent)}
+.cli span{padding:11px 0;border-bottom:1px solid var(--rule);font-size:16px;color:var(--ink-2)}
+
+.vs{width:100%;border-collapse:collapse;font-size:16px}
+.vs th{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--muted);text-align:left;padding:0 12px 10px 0;border-bottom:1px solid var(--ink)}
+.vs td{padding:12px 12px 12px 0;border-bottom:1px solid var(--rule);vertical-align:top}
+.vs td:first-child{font-family:var(--mono);font-size:13px;color:var(--muted);white-space:nowrap}
+.vs td:nth-child(2){color:var(--ink)}
+.vs td:nth-child(3){color:var(--ink-2)}
+
+.limits{margin:0;padding-left:20px;color:var(--ink-2)}
+.limits li{margin-bottom:6px}
+
+footer{margin:70px 0 0;padding:26px 0 40px;border-top:1px solid var(--rule);display:flex;flex-wrap:wrap;gap:12px 22px;font-family:var(--mono);font-size:12.5px;color:var(--muted)}
+footer a{text-decoration:none}
+footer a:hover{color:var(--accent)}
+footer .sp{margin-left:auto}
+
+.reveal{opacity:0;transform:translateY(14px);transition:opacity .6s var(--ease),transform .6s var(--ease)}
+.reveal.in{opacity:1;transform:none}
+.no-js .reveal{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}html{scroll-behavior:auto}}
+
+@media (max-width:760px){
+  body{font-size:17px}
+  .wrap{padding:0 16px}
+  header{padding:48px 0 28px}
+  .facts{grid-template-columns:1fr 1fr}
+  .flow{grid-template-columns:1fr}
+  .arrow{transform:rotate(90deg);justify-self:center}
+  .grid2{grid-template-columns:1fr}
+  .tiers td:last-child,.tiers th:last-child{display:none}
+  .cli{grid-template-columns:1fr}
+  .cli code{border-bottom:none;padding-bottom:0}
+  .vs td:first-child{white-space:normal}
+  footer .sp{margin-left:0}
+}
+</style>
+</head>
+<body class="no-js">
+<script>document.body.classList.remove('no-js')</script>
+
+<nav>
+  <div class="wrap">
+    <a class="brand" href="#top"><i aria-hidden="true"></i>ClawRoute</a>
+    <a href="#how">how it works</a>
+    <a href="#tiers">tiers</a>
+    <a href="#safety">safety</a>
+    <a href="#use">use it</a>
+    <a href="https://github.com/Ath404/ClawRoute" target="_blank" rel="noopener">github</a>
+    <a href="https://www.npmjs.com/package/clawroute" target="_blank" rel="noopener">npm</a>
+  </div>
+</nav>
+
+<main class="wrap" id="top">
+
+  <header>
+    <p class="eyebrow">Open source · MIT · v1.2</p>
+    <h1>Stop paying <em>frontier prices</em> for “thanks!”</h1>
+    <p class="lead">ClawRoute is a local proxy that classifies every LLM request in under 5ms and sends it to the cheapest model that can handle it. If that model fails, it escalates before your app ever sees a bad answer.</p>
+    <div class="cta">
+      <a class="btn primary" href="#use">Get started</a>
+      <a class="btn" href="https://github.com/Ath404/ClawRoute" target="_blank" rel="noopener">View on GitHub</a>
+      <a class="btn" href="https://www.npmjs.com/package/clawroute" target="_blank" rel="noopener">npm package</a>
+    </div>
+    <div class="term" role="region" aria-label="Install commands">
+      <div class="dots" aria-hidden="true"><span></span><span></span><span></span></div>
+      <button class="copy" type="button" data-copy="npm install -g clawroute&#10;clawroute start">copy</button>
+<div><span class="p">$</span> npm install -g clawroute</div>
+<div><span class="p">$</span> export OPENAI_API_KEY=sk-...  <span class="c"># or a .env file</span></div>
+<div><span class="p">$</span> clawroute start</div>
+<div class="okline">✅ ClawRoute is running on http://127.0.0.1:18790</div>
+    </div>
+
+    <div class="facts">
+      <div><b>60–90%</b><span>lower API spend</span></div>
+      <div><b>&lt;5ms</b><span>local classification</span></div>
+      <div><b>4</b><span>providers + OpenRouter</span></div>
+      <div><b>0</b><span>prompts leave your machine</span></div>
+    </div>
+  </header>
+
+  <section id="how" class="reveal">
+    <p class="sec-head">/how it works</p>
+    <h2>Most of your traffic doesn't need your best model.</h2>
+    <p class="sub">Heartbeats, acknowledgements and quick questions make up a big share of an agent's calls. ClawRoute sits between your client and your providers and decides, per request, what each one actually needs.</p>
+    <div class="flow">
+      <div class="node"><h3>Your client</h3><p>OpenClaw, Cursor, your own app: anything that speaks the OpenAI API.</p></div>
+      <div class="arrow" aria-hidden="true">→</div>
+      <div class="node mid"><h3>ClawRoute · 127.0.0.1:18790</h3>
+        <ol><li>Classify the request locally</li><li>Route to the cheapest capable model</li><li>Validate the answer; escalate if it fails</li><li>Log the cost and savings to SQLite</li></ol></div>
+      <div class="arrow" aria-hidden="true">→</div>
+      <div class="node"><h3>Providers</h3><p>OpenAI, Anthropic, Google, DeepSeek, or anything on OpenRouter, using your own keys.</p></div>
+    </div>
+  </section>
+
+  <section id="tiers" class="reveal">
+    <p class="sec-head">/tiers</p>
+    <h2>Five tiers, decided by rules you can read.</h2>
+    <p class="sub">No model call to decide which model to call. The classifier is plain heuristics, so it's fast, free and predictable. Every default below can be changed in config.</p>
+    <table class="tiers">
+      <thead><tr><th>Tier</th><th>What lands here</th><th>Default model</th></tr></thead>
+      <tbody>
+        <tr class="t1"><td><span class="tag"></span>heartbeat</td><td>Pings and liveness checks: “hi”, “are you there?”</td><td>gemini-2.5-flash-lite</td></tr>
+        <tr class="t2"><td><span class="tag"></span>simple</td><td>“thanks”, “ok”, emoji replies, short questions</td><td>deepseek-chat</td></tr>
+        <tr class="t3"><td><span class="tag"></span>moderate</td><td>General conversation (the default)</td><td>gemini-2.5-flash</td></tr>
+        <tr class="t4"><td><span class="tag"></span>complex</td><td>Analysis, tool use, deep threads, short code requests</td><td>claude-sonnet-4-6</td></tr>
+        <tr><td><span class="tag"></span>frontier</td><td>Code blocks, forced tool calls, very long context, images</td><td>claude-opus-4-6</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="safety" class="reveal">
+    <p class="sec-head">/safety</p>
+    <h2>Built so it can't break your agent.</h2>
+    <p class="sub">A router that saves money but corrupts a tool call isn't worth running. These rules hold on every request.</p>
+    <div class="grid2">
+      <div class="card"><h3>Streams are never interrupted</h3><p>Once tokens start flowing to your client, ClawRoute is committed. No restarts, no doubled output.</p></div>
+      <div class="card"><h3>Tool calls are never retried</h3><p>A response containing tool calls is returned as-is, so an action can't run twice.</p></div>
+      <div class="card"><h3>Errors fall through</h3><p>If ClawRoute itself hits an error, the request goes to the model you originally asked for.</p></div>
+      <div class="card"><h3>One-call kill switch</h3><p><code>POST /api/disable</code> or <code>CLAWROUTE_ENABLED=false</code> stops all routing immediately.</p></div>
+      <div class="card"><h3>Local and private</h3><p>Binds to 127.0.0.1. Classification makes no network calls. Content isn't logged unless you turn it on.</p></div>
+      <div class="card"><h3>No telemetry</h3><p>No analytics, no phoning home. Your keys go straight to your providers.</p></div>
+    </div>
+  </section>
+
+  <section id="use" class="reveal">
+    <p class="sec-head">/use it</p>
+    <h2>Point your client at it. That's the integration.</h2>
+    <p class="sub">ClawRoute speaks the OpenAI API, including <code>/v1/models</code>, so changing one base URL is enough.</p>
+<pre><code><span class="c">// any OpenAI SDK client</span>
+const client = new OpenAI({
+  baseURL: "http://127.0.0.1:18790/v1",
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+<span class="c"># OpenClaw: ~/.openclaw/openclaw.json</span>
+providers.openai.baseUrl = "http://127.0.0.1:18790/v1"</code></pre>
+
+    <p class="sub" style="margin-top:30px">Then watch what it saves:</p>
+    <div class="cli">
+      <code>clawroute stats</code><span>Today's requests, savings and tier mix (<code>--week</code> for 7 days)</span>
+      <code>clawroute log</code><span>Recent routing decisions and why each was made</span>
+      <code>clawroute dry-run</code><span>Classify and log without rerouting: see the savings before you commit</span>
+      <code>clawroute live</code><span>Leave dry-run and start routing</span>
+      <code>clawroute disable</code><span>Pass everything through to the original model</span>
+    </div>
+  </section>
+
+  <section id="compare" class="reveal">
+    <p class="sec-head">/compared</p>
+    <h2>ClawRoute vs OpenRouter</h2>
+    <p class="sub">They solve different problems. OpenRouter gives you one key for hundreds of models. ClawRoute picks the right model for you, on your machine.</p>
+    <table class="vs">
+      <thead><tr><th></th><th>ClawRoute</th><th>OpenRouter</th></tr></thead>
+      <tbody>
+        <tr><td>runs</td><td>Locally, on your machine</td><td>Their cloud</td></tr>
+        <tr><td>prompts</td><td>Never leave your machine</td><td>Pass through their servers</td></tr>
+        <tr><td>overhead</td><td>None; you pay providers directly</td><td>Platform fee per request</td></tr>
+        <tr><td>model choice</td><td>Automatic, per request</td><td>You choose</td></tr>
+        <tr><td>setup</td><td>Local install + your own keys</td><td>One key, nothing to install</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="limits" class="reveal">
+    <p class="sec-head">/limits</p>
+    <h2>What it doesn't do.</h2>
+    <ul class="limits">
+      <li>Classification is rules-based, not ML. Edge cases can land a tier too low; escalation on failure is the safety net.</li>
+      <li>Token counts for streamed responses are estimated.</li>
+      <li>Cost figures use published provider prices and can lag behind price changes.</li>
+    </ul>
+  </section>
+
+  <footer>
+    <span>ClawRoute · MIT licensed</span>
+    <a href="https://github.com/Ath404/ClawRoute" target="_blank" rel="noopener">GitHub</a>
+    <a href="https://www.npmjs.com/package/clawroute" target="_blank" rel="noopener">npm</a>
+    <a href="https://github.com/Ath404/ClawRoute/issues" target="_blank" rel="noopener">Issues</a>
+    <span class="sp">Built by <a href="https://atharvc.tech">Atharv Chauhan</a></span>
+  </footer>
+</main>
+
+<script>
+document.querySelectorAll('.copy').forEach(function(b){
+  b.addEventListener('click',function(){
+    var t=b.getAttribute('data-copy');
+    try{navigator.clipboard.writeText(t).then(function(){b.textContent='copied';setTimeout(function(){b.textContent='copy'},1500)})}catch(e){}
+  });
+});
+var io='IntersectionObserver' in window ? new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.12}) : null;
+document.querySelectorAll('.reveal').forEach(function(el){io?io.observe(el):el.classList.add('in')});
+</script>
+</body>
+</html>
