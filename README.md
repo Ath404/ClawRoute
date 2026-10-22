@@ -78,15 +78,15 @@ npm start
 
 ### Model Mappings
 
-Default tier → model mappings (as of Feb 2026):
+Default tier → model mappings (as of Oct 2026):
 
 | Tier | Primary Model | Fallback | Use Case |
 |------|--------------|----------|----------|
-| Heartbeat | `gemini-2.5-flash-lite` | `deepseek-chat` | Ping/status checks |
-| Simple | `deepseek-chat` | `gemini-2.5-flash` | Acknowledgments, short replies |
-| Moderate | `gemini-2.5-flash` | `gpt-5-mini` | General conversation |
-| Complex | `claude-sonnet-4-6` | `gpt-5.2` | Tool use, analysis |
-| Frontier | `claude-opus-4-6` | `o3` | Code, deep reasoning |
+| Heartbeat | `gemini-3.5-flash-lite` | `deepseek-chat` | Ping/status checks |
+| Simple | `deepseek-chat` | `gemini-3.8-flash` | Acknowledgments, short replies |
+| Moderate | `gemini-3.8-flash` | `gpt-6-luna` | General conversation |
+| Complex | `claude-sonnet-5-5` | `gpt-6.1-sol` | Tool use, analysis |
+| Frontier | `claude-opus-5-5` | `gpt-6-astra` | Code, deep reasoning |
 
 Customize in `config/clawroute.json`.
 
@@ -139,7 +139,7 @@ ClawRoute uses heuristic rules evaluated in priority order (<5ms, fully local):
 ### Tier 0: Heartbeat
 - Matches: "ping", "hi", "status", "test"
 - Short messages (< 30 chars) with no tools
-- Routes to: `gemini-2.5-flash-lite` ($0.10/M input)
+- Routes to: `gemini-3.5-flash-lite` ($0.30/M input)
 
 ### Tier 1: Simple
 - Acknowledgments: "thanks", "ok", "👍"
@@ -148,19 +148,19 @@ ClawRoute uses heuristic rules evaluated in priority order (<5ms, fully local):
 
 ### Tier 2: Moderate (default)
 - General conversation
-- Routes to: `gemini-2.5-flash` ($0.30/M input)
+- Routes to: `gemini-3.8-flash` ($0.75/M input)
 
 ### Tier 3: Complex
 - Tool/function calls present
 - Analytical keywords + length
 - Deep conversations (> 8 messages)
-- Routes to: `claude-sonnet-4-6` ($3.00/M input)
+- Routes to: `claude-sonnet-5-5` ($2.00/M input)
 
 ### Tier 4: Frontier
 - Code blocks detected
 - Tool calls with `tool_choice` set
 - Very long context (> 8K tokens)
-- Routes to: `claude-opus-4-6` ($15/M input) or original model
+- Routes to: `claude-opus-5-5` ($4.00/M input) or original model
 
 ## Safety Guarantees
 
@@ -182,9 +182,9 @@ ClawRoute uses heuristic rules evaluated in priority order (<5ms, fully local):
 
 | Provider | Status | Models |
 |----------|--------|--------|
-| OpenAI | ✅ Full | GPT-5 Mini, GPT-5.2, o3 |
-| Anthropic | ✅ Full | Claude Sonnet 4.6, Claude Opus 4.6 |
-| Google | ✅ Full | Gemini 2.5 Flash Lite, Flash, Pro |
+| OpenAI | ✅ Full | GPT-6 Luna, GPT-6.1 Sol, GPT-6 Astra |
+| Anthropic | ✅ Full | Claude Haiku 5.5, Sonnet 5.5, Opus 5.5, Fable 5.1 |
+| Google | ✅ Full | Gemini 3.5 Flash Lite, 3.8 Flash, 4 Argon |
 | DeepSeek | ✅ Full | DeepSeek V3.2 (via `deepseek-chat`) |
 | OpenRouter | ✅ Full | Any model via OpenRouter |
 

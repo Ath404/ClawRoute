@@ -22,6 +22,12 @@ import { getEscalatedModel } from './router.js';
 import { validateResponse } from './validator.js';
 import { pipeStream, getSSEHeaders, StreamResult } from './streaming.js';
 import { sleep, estimateMessagesTokens, safeJsonParse } from './utils.js';
+import {
+    toAnthropicRequest,
+    fromAnthropicResponse,
+    fromAnthropicError,
+    translateAnthropicStream,
+} from './anthropic.js';
 
 /**
  * Check if escalation is allowed based on plan and tier.
@@ -380,25 +386,28 @@ async function makeProviderRequest(
     const baseUrl = getApiBaseUrl(provider);
     const authHeaders = getAuthHeader(provider, apiKey);
 
+    const modelName = extractModelName(modelId);
+
+    // Anthropic speaks its own Messages format: translate the request, then the response
+    if (provider === 'anthropic') {
+        const upstream = await fetch(`${baseUrl}/messages`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                ...authHeaders,
+            },
+            body: JSON.stringify(toAnthropicRequest(request, modelName)),
+        });
+        return adaptAnthropicResponse(upstream, modelName, Boolean(request.stream));
+    }
+
     // Build the request body with the routed model
     const body = {
         ...request,
-        model: extractModelName(modelId),
+        model: modelName,
     };
 
-    // Determine the endpoint
-    let url = `${baseUrl}/chat/completions`;
-
-    // Handle Anthropic's different endpoint
-    if (provider === 'anthropic') {
-        // For Anthropic, we need to use the messages endpoint
-        // and handle the format differently
-        // For now, we'll use OpenAI-compatible format
-        // Users should use OpenRouter for Anthropic models
-        url = `${baseUrl}/messages`;
-    }
-
-    const response = await fetch(url, {
+    const response = await fetch(`${baseUrl}/chat/completions`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -408,6 +417,41 @@ async function makeProviderRequest(
     });
 
     return response;
+}
+
+/**
+ * Convert an Anthropic response (JSON, SSE or error) into OpenAI format.
+ */
+async function adaptAnthropicResponse(
+    upstream: Response,
+    modelName: string,
+    streaming: boolean
+): Promise<Response> {
+    const jsonHeaders = { 'Content-Type': 'application/json' };
+
+    if (!upstream.ok) {
+        const raw = await upstream.text();
+        return new Response(JSON.stringify(fromAnthropicError(raw, upstream.status)), {
+            status: upstream.status,
+            headers: jsonHeaders,
+        });
+    }
+
+    if (streaming && upstream.body) {
+        return new Response(translateAnthropicStream(upstream.body, modelName), {
+            status: upstream.status,
+            headers: getSSEHeaders(),
+        });
+    }
+
+    const data = safeJsonParse<Record<string, unknown>>(await upstream.text());
+    if (!data) {
+        return createErrorResponse('Invalid response from Anthropic');
+    }
+    return new Response(JSON.stringify(fromAnthropicResponse(data, modelName)), {
+        status: upstream.status,
+        headers: jsonHeaders,
+    });
 }
 
 /**

@@ -118,24 +118,24 @@ function deepMerge<T>(target: T, source: Partial<T>): T {
  */
 const DEFAULT_TIER_MODELS: Record<TaskTier, TierModelConfig> = {
     [TaskTier.HEARTBEAT]: {
-        primary: 'google/gemini-2.5-flash-lite',
+        primary: 'google/gemini-3.5-flash-lite',
         fallback: 'deepseek/deepseek-chat',
     },
     [TaskTier.SIMPLE]: {
         primary: 'deepseek/deepseek-chat',
-        fallback: 'google/gemini-2.5-flash',
+        fallback: 'google/gemini-3.8-flash',
     },
     [TaskTier.MODERATE]: {
-        primary: 'google/gemini-2.5-flash',
-        fallback: 'openai/gpt-5-mini',
+        primary: 'google/gemini-3.8-flash',
+        fallback: 'openai/gpt-6-luna',
     },
     [TaskTier.COMPLEX]: {
-        primary: 'anthropic/claude-sonnet-4-6',
-        fallback: 'openai/gpt-5.2',
+        primary: 'anthropic/claude-sonnet-5-5',
+        fallback: 'openai/gpt-6.1-sol',
     },
     [TaskTier.FRONTIER]: {
-        primary: 'anthropic/claude-opus-4-6',
-        fallback: 'openai/o3',
+        primary: 'anthropic/claude-opus-5-5',
+        fallback: 'openai/gpt-6-astra',
     },
 };
 

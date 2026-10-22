@@ -9,7 +9,9 @@ import { ModelEntry, ProviderType } from './types.js';
 
 /**
  * Default models with their costs and capabilities.
- * Costs are in USD per 1M tokens (as of February 2026).
+ * Costs are in USD per 1M tokens (Anthropic: first-party rates as of October 2026;
+ * OpenAI/Google/DeepSeek: third-party price trackers as of October 2026, verify
+ * against the provider's pricing page).
  */
 export const DEFAULT_MODELS: ModelEntry[] = [
     // Ultra-cheap tier (heartbeat/simple)
@@ -105,6 +107,108 @@ export const DEFAULT_MODELS: ModelEntry[] = [
         inputCostPer1M: 15.00,
         outputCostPer1M: 75.00,
         maxContext: 200000,
+        toolCapable: true,
+        multimodal: true,
+        enabled: true,
+    },
+
+    // === October 2026 model generation ===
+    {
+        id: 'anthropic/claude-haiku-5-5',
+        provider: 'anthropic',
+        inputCostPer1M: 0.1,
+        outputCostPer1M: 0.5,
+        maxContext: 1000000,
+        toolCapable: true,
+        multimodal: true,
+        enabled: true,
+    },
+    {
+        id: 'anthropic/claude-sonnet-5-5',
+        provider: 'anthropic',
+        inputCostPer1M: 2.0,
+        outputCostPer1M: 10.0,
+        maxContext: 1000000,
+        toolCapable: true,
+        multimodal: true,
+        enabled: true,
+    },
+    {
+        id: 'anthropic/claude-opus-5-5',
+        provider: 'anthropic',
+        inputCostPer1M: 4.0,
+        outputCostPer1M: 20.0,
+        maxContext: 1000000,
+        toolCapable: true,
+        multimodal: true,
+        enabled: true,
+    },
+    {
+        id: 'anthropic/claude-fable-5-1',
+        provider: 'anthropic',
+        inputCostPer1M: 10.0,
+        outputCostPer1M: 50.0,
+        maxContext: 1000000,
+        toolCapable: true,
+        multimodal: true,
+        enabled: true,
+    },
+    {
+        id: 'google/gemini-3.5-flash-lite',
+        provider: 'google',
+        inputCostPer1M: 0.3,
+        outputCostPer1M: 2.5,
+        maxContext: 1000000,
+        toolCapable: true,
+        multimodal: true,
+        enabled: true,
+    },
+    {
+        id: 'google/gemini-3.8-flash',
+        provider: 'google',
+        inputCostPer1M: 0.75,
+        outputCostPer1M: 3.75,
+        maxContext: 1000000,
+        toolCapable: true,
+        multimodal: true,
+        enabled: true,
+    },
+    {
+        id: 'google/gemini-4-argon',
+        provider: 'google',
+        inputCostPer1M: 2.0,
+        outputCostPer1M: 10.0,
+        maxContext: 1000000,
+        toolCapable: true,
+        multimodal: true,
+        enabled: true,
+    },
+    {
+        id: 'openai/gpt-6-luna',
+        provider: 'openai',
+        inputCostPer1M: 0.1,
+        outputCostPer1M: 0.5,
+        maxContext: 128000,
+        toolCapable: true,
+        multimodal: true,
+        enabled: true,
+    },
+    {
+        id: 'openai/gpt-6.1-sol',
+        provider: 'openai',
+        inputCostPer1M: 2.0,
+        outputCostPer1M: 10.0,
+        maxContext: 128000,
+        toolCapable: true,
+        multimodal: true,
+        enabled: true,
+    },
+    {
+        id: 'openai/gpt-6-astra',
+        provider: 'openai',
+        inputCostPer1M: 10.0,
+        outputCostPer1M: 50.0,
+        maxContext: 128000,
         toolCapable: true,
         multimodal: true,
         enabled: true,
