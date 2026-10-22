@@ -60,7 +60,7 @@ export type ProviderType = 'anthropic' | 'openai' | 'google' | 'deepseek' | 'ope
  * Model entry with cost and capability information.
  */
 export interface ModelEntry {
-    /** Unique model identifier, e.g., "anthropic/claude-sonnet-4-5" */
+    /** Unique model identifier, e.g., "anthropic/claude-sonnet-5-5" */
     id: string;
     /** The provider for this model */
     provider: ProviderType;

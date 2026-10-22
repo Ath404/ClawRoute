@@ -135,7 +135,7 @@ export function sleep(ms: number): Promise<void> {
 /**
  * Parse a model ID into provider and model name.
  *
- * @param modelId - Full model ID (e.g., "anthropic/claude-sonnet-4-5")
+ * @param modelId - Full model ID (e.g., "anthropic/claude-sonnet-5-5")
  * @returns Object with provider and modelName
  */
 export function parseModelId(modelId: string): { provider: string; modelName: string } {

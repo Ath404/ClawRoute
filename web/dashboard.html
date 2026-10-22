@@ -343,22 +343,22 @@ footer .sp{margin-left:auto}
     var mk = function (minsAgo, tier, from, to, saved, ms, esc, why) {
       return { timestamp: new Date(now - minsAgo * 60000).toISOString(), tier: tier, originalModel: from, routedModel: to, savingsUsd: saved, responseTimeMs: ms, escalated: !!esc, reason: why };
     };
-    var O = 'anthropic/claude-opus-4-6';
+    var O = 'anthropic/claude-opus-5-5';
     return {
       today: { requests: 589, savingsUsd: 10.17, savingsPercent: 71.4, escalations: 8, tierBreakdown: { heartbeat: 212, simple: 168, moderate: 131, complex: 63, frontier: 15 } },
       thisWeek: { requests: 3904, savingsUsd: 66.2 },
       thisMonth: { requests: 10817, savingsUsd: 187.63 },
       allTime: { requests: 41250, savingsUsd: 702.18 },
-      config: { enabled: true, dryRun: false, activeOverrides: 0, modelMap: { heartbeat: 'google/gemini-2.5-flash-lite', simple: 'deepseek/deepseek-chat', moderate: 'google/gemini-2.5-flash', complex: 'anthropic/claude-sonnet-4-6', frontier: O } },
+      config: { enabled: true, dryRun: false, activeOverrides: 0, modelMap: { heartbeat: 'google/gemini-3.5-flash-lite', simple: 'deepseek/deepseek-chat', moderate: 'google/gemini-3.8-flash', complex: 'anthropic/claude-sonnet-5-5', frontier: O } },
       recentDecisions: [
-        mk(0.3, 'heartbeat', O, 'google/gemini-2.5-flash-lite', 0.021, 212, 0, 'heartbeat pattern'),
+        mk(0.3, 'heartbeat', O, 'google/gemini-3.5-flash-lite', 0.021, 212, 0, 'heartbeat pattern'),
         mk(1.1, 'simple', O, 'deepseek/deepseek-chat', 0.034, 640, 0, 'acknowledgment'),
-        mk(2.4, 'complex', O, 'anthropic/claude-sonnet-4-6', 0.118, 2310, 0, 'complex: frontier_keywords'),
-        mk(3.0, 'moderate', O, 'google/gemini-2.5-flash', 0.052, 980, 0, 'default'),
+        mk(2.4, 'complex', O, 'anthropic/claude-sonnet-5-5', 0.118, 2310, 0, 'complex: frontier_keywords'),
+        mk(3.0, 'moderate', O, 'google/gemini-3.8-flash', 0.052, 980, 0, 'default'),
         mk(4.7, 'frontier', O, O, 0, 4120, 0, 'frontier: code_blocks'),
-        mk(5.2, 'simple', O, 'anthropic/claude-sonnet-4-6', 0.0, 1870, 1, 'escalated after invalid response'),
-        mk(6.9, 'heartbeat', O, 'google/gemini-2.5-flash-lite', 0.019, 188, 0, 'heartbeat pattern'),
-        mk(8.3, 'moderate', O, 'google/gemini-2.5-flash', 0.047, 1105, 0, 'default')
+        mk(5.2, 'simple', O, 'anthropic/claude-sonnet-5-5', 0.0, 1870, 1, 'escalated after invalid response'),
+        mk(6.9, 'heartbeat', O, 'google/gemini-3.5-flash-lite', 0.019, 188, 0, 'heartbeat pattern'),
+        mk(8.3, 'moderate', O, 'google/gemini-3.8-flash', 0.047, 1105, 0, 'default')
       ]
     };
   }

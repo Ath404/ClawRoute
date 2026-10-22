@@ -6,9 +6,17 @@
 
 Save 60-90% on your LLM costs by automatically routing requests to cheaper models when appropriate.
 
-> **v1.2** — Intelligent, local, and private. Updated for the latest models (Feb 2026).
+> **v1.3** — Intelligent, local, and private. Updated for the latest models (Oct 2026), with native Anthropic support.
 >
 > Works with **any OpenAI-compatible client** — OpenClaw, Cursor, custom apps, or direct API calls. No special detection needed.
+
+## What's New in v1.3
+
+- **Latest models**: Claude Haiku 5.5 / Sonnet 5.5 / Opus 5.5 / Fable 5.1, GPT-6 Luna / 6.1 Sol / Astra, Gemini 3.5 Flash Lite / 3.8 Flash / 4 Argon. Default tiers updated; older models stay in the registry for cost lookups.
+- **Native Anthropic adapter**: direct `anthropic/*` routing, including streaming and tool use (no OpenRouter needed).
+- **Fix**: the bundled default config now ships in the npm package.
+
+If you customised tiers in `config/clawroute.json`, your settings still take precedence over the new defaults.
 
 ## How It Works
 
@@ -192,7 +200,7 @@ ClawRoute uses heuristic rules evaluated in priority order (<5ms, fully local):
 
 1. **Heuristic classification**: Rules-based, not ML. May occasionally misclassify edge cases.
 2. **Token estimates for streaming**: Estimated from chunk count, not exact.
-3. **Cost data**: Based on published prices as of Feb 2026, may lag behind provider changes.
+3. **Cost data**: Based on published prices as of Oct 2026, may lag behind provider changes. Anthropic prices come from Anthropic's docs; OpenAI, Google and DeepSeek prices come from third-party trackers, so verify them before relying on savings figures.
 
 ## API Reference
 
@@ -222,7 +230,7 @@ POST /api/override/session # Set session override
 
 ### Can I use this with Anthropic Claude directly?
 
-Yes! ClawRoute supports Anthropic's API natively. Set `ANTHROPIC_API_KEY` in your `.env` and it will route to Claude models directly. You can also use OpenRouter for additional flexibility.
+Yes! Since v1.3, ClawRoute talks to Anthropic's Messages API natively: it translates OpenAI-format requests, tool calls, images and streams, so clients keep using the OpenAI format. Set `ANTHROPIC_API_KEY` in your `.env` and it will route to Claude models directly. Parameters the current Claude models reject (forced `tool_choice`, `temperature`/`top_p` on 5.x, assistant prefill) are dropped automatically. You can also use OpenRouter for additional flexibility.
 
 ### Will this break my agent?
 

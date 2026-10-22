@@ -30,7 +30,7 @@ const __dirname = dirname(__filename);
 
 // Read version from package.json at startup
 const _require = createRequire(import.meta.url);
-const PKG_VERSION: string = (_require('../package.json') as { version: string }).version ?? '1.2.0';
+const PKG_VERSION: string = (_require('../package.json') as { version: string }).version ?? '1.3.0';
 
 /**
  * Create the Hono application.
@@ -331,7 +331,7 @@ export function createApp(config: ClawRouteConfig): Hono {
             {
                 error: {
                     message:
-                        'Anthropic native format not yet supported in v1.0. Use OpenAI-compatible format or OpenRouter.',
+                        'Anthropic native request format is not supported on this endpoint. Use /v1/chat/completions (OpenAI format); Claude models are routed natively.',
                     type: 'invalid_request_error',
                     code: 'unsupported_format',
                 },
